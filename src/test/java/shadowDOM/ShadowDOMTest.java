@@ -2,6 +2,7 @@ package shadowDOM;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.junit.Assert;
+import org.junit.Test;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,7 +19,12 @@ import java.util.List;
 public class ShadowDOMTest {
 
     WebDriver driver;
-    WebElement shadowHost = driver.findElement(By.cssSelector("#app"));
+    WebElement shadowHost;
+
+    public ShadowDOMTest() throws InterruptedException {
+        login();
+        shadowHost = driver.findElement(By.cssSelector("nuxeo-app"));
+    }
 
     @BeforeAll
     public static void setUpWebDriverManager() {
@@ -42,7 +48,6 @@ public class ShadowDOMTest {
     //    @Test
     public void ShadowTest1() throws InterruptedException {
         Thread.sleep(15000);
-        WebElement shadowHost = driver.findElement(By.cssSelector("#nuxeo-app"));
         WebElement shadowObject = shadowHost.getShadowRoot().findElement(By.cssSelector("#container"));
         System.out.println("Text is:" + shadowObject.getText());
         WebElement anotherShadowObj = shadowHost.getShadowRoot().findElement(By.cssSelector("#container > p"));
@@ -121,6 +126,7 @@ public class ShadowDOMTest {
     public WebElement setAssetCreationSuggestion(String field) {
         // title value
         WebElement element = null;
+
         List<WebElement> inputList = shadowHost.getShadowRoot().findElements(By.cssSelector("nuxeo-app nuxeo-directory-suggestion[role='widget']"));
         for (int i = 0; i < inputList.size(); i++) {
             if (inputList.get(i).getShadowRoot().findElement(By.cssSelector("nuxeo-app label")).getText().equals(field)) {
@@ -132,9 +138,9 @@ public class ShadowDOMTest {
         return element;
     }
 
-    @BeforeTest
+    //    @BeforeTest
     public void login() throws InterruptedException {
-        System.setProperty("webdriver.chrome.driver", "C:\\Users\\srivatsan.seshadri\\Downloads\\chromedriver.exe");
+        System.setProperty("webdriver.chrome.driver", "C:\\Users\\e-ssesha\\Downloads\\chromedriver.exe");
 //		System.setProperty("webdriver.gecko.driver", "C:\\Users\\srivatsan.seshadri\\Downloads\\geckodriver.exe");
 //		ChromeDriverManager.getInstance().setup();
         driver = new ChromeDriver();
@@ -162,32 +168,39 @@ public class ShadowDOMTest {
         driver.quit();
     }
 
-    @org.testng.annotations.Test
+    @Test
     public void searchAsset() throws InterruptedException {
         shadowHost.getShadowRoot().findElement(By.cssSelector("nuxeo-menu-icon[label='Search']")).click();
-        WebElement searchInput = shadowHost.getShadowRoot().findElement(By.cssSelector("nuxeo-card[heading='Search All Fields'] iron-input[class='input-element'] input"));
-        searchInput.click();
-        searchInput.sendKeys("Asset_creation_Shadow_Automation");
-
-        List<WebElement> cardList = shadowHost.getShadowRoot().findElements(By.cssSelector("nuxeo-app nuxeo-data-grid[name='grid'] a[class='title']"));
+        Thread.sleep(15000);
+        WebElement searchInput = shadowHost.getShadowRoot().findElement(By.cssSelector("nuxeo-search-form[name='nonproductsearch']"))
+                .getShadowRoot().findElement(By.cssSelector("div[id='filters']"));
+        WebElement searchInput1 = searchInput.getShadowRoot().findElement(By.cssSelector("nuxeo-nonproductsearch-search-form"));
+//                .getShadowRoot().findElement(By.cssSelector("nuxeo-layout[id='layout']"))
+//                .getShadowRoot().findElement(By.cssSelector("nuxeo-nonproductsearch-search-form"))
+        WebElement searchInput2 = searchInput1.getShadowRoot().findElement(By.cssSelector("nuxeo-card[heading='Search All Fields']"));
+        WebElement seacrhIp3 = searchInput2.getShadowRoot().findElement(By.cssSelector("nuxeo-input[role='widget']"));
+//                .getShadowRoot().findElement(By.cssSelector("nuxeo-nonproductsearch-search-forms")).getShadowRoot().findElement(By.cssSelector("paper-input#paperInput"));
+        seacrhIp3.click();
+        seacrhIp3.sendKeys("Asset_creation_Shadow_Automation");
+        List<WebElement> cardList = shadowHost.getShadowRoot().findElements(By.cssSelector("nuxeo-data-grid[name='grid'] a[class='title']"));
         System.out.println("****************" + cardList.size() + "****************");
         for (int i = 0; i < cardList.size(); i++) {
             if (cardList.get(i).getAttribute("href").contains("Asset_creation_Shadow_Automation")) {
                 System.out.println("****************" + cardList.get(i).getAttribute("href") + "****************");
-                shadowHost.getShadowRoot().findElements(By.cssSelector("nuxeo-app nuxeo-data-grid[name='grid'] div[class='thumbnailContainer']")).get(i)
+                shadowHost.getShadowRoot().findElements(By.cssSelector("nuxeo-data-grid[name='grid'] div[class='thumbnailContainer']")).get(i)
                         .click();
                 break;
             }
         }
 
         // verifying the folder name and the file name
-        String fileName = shadowHost.getShadowRoot().findElement(By.cssSelector("nuxeo-app a[class='current breadcrumb-item breadcrumb-item-current']"))
+        String fileName = shadowHost.getShadowRoot().findElement(By.cssSelector("a[class='current breadcrumb-item breadcrumb-item-current']"))
                 .getText();
-        String brandName = shadowHost.getShadowRoot().findElements(By.cssSelector("nuxeo-app span[class='breadcrumb-item-title']")).get(1).getText();
+        String brandName = shadowHost.getShadowRoot().findElements(By.cssSelector("span[class='breadcrumb-item-title']")).get(1).getText();
         System.out.println("************" + fileName + "************" + brandName + "**************");
         Assert.assertTrue(brandName.equals("Calvin Klein"));
         Assert.assertEquals(fileName, "Asset_creation_Shadow_Automation");
         Thread.sleep(5000);
-
+        tearDown();
     }
 }
